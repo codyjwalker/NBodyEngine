@@ -43,12 +43,12 @@ public class Loader {
 		// Return the data we created about the VAO.
 		return new RawModel(vaoID, indices.length);
 	}
-	
+
 	// Loads a texture into OpenGl.
 	public int loadTexture(String fileName) {
 		Texture texture = null;
 		try {
-			texture = TextureLoader.getTexture("PNG", new FileInputStream("res/"+fileName+".png"));
+			texture = TextureLoader.getTexture("PNG", new FileInputStream("res/" + fileName + ".jpg"));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -57,10 +57,11 @@ public class Loader {
 		int textureID = texture.getTextureID();
 		Textures.add(textureID);
 		return textureID;
-		
+
 	}
 
-	// Called upon closing of engine to delete the VAOs, VBOs, & textures we created.
+	// Called upon closing of engine to delete the VAOs, VBOs, & textures we
+	// created.
 	public void cleanUp() {
 		for (int vao : VAOs) {
 			GL30.glDeleteVertexArrays(vao);

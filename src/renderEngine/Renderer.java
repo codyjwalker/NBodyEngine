@@ -18,13 +18,13 @@ import toolbox.Maths;
  * Purpose:	Renders the model from the VAO.
  */
 public class Renderer {
-	
+
 	private static final float FOV = 70;
 	private static final float NEAR_PLANE = 0.1f;
 	private static final float FAR_PLANE = 1000;
-	
+
 	private Matrix4f projectionMatrix;
-	
+
 	public Renderer(StaticShader shader) {
 		createProjectionMatrix();
 		shader.start();
@@ -65,20 +65,20 @@ public class Renderer {
 		GL20.glDisableVertexAttribArray(1);
 		GL30.glBindVertexArray(0);
 	}
-	
+
 	// Creates the projection matrix.
 	private void createProjectionMatrix() {
 		float aspectRatio = (float) Display.getWidth() / (float) Display.getHeight();
 		float yScale = (float) ((1f / Math.tan(Math.toRadians(FOV / 2f))) * aspectRatio);
 		float xScale = yScale / aspectRatio;
 		float frustumLength = FAR_PLANE - NEAR_PLANE;
-		
+
 		projectionMatrix = new Matrix4f();
 		projectionMatrix.m00 = xScale;
 		projectionMatrix.m11 = yScale;
-		projectionMatrix.m22 = - ((FAR_PLANE + NEAR_PLANE) / frustumLength);
+		projectionMatrix.m22 = -((FAR_PLANE + NEAR_PLANE) / frustumLength);
 		projectionMatrix.m23 = -1;
-		projectionMatrix.m32 = - ((2 * NEAR_PLANE * FAR_PLANE) / frustumLength);
+		projectionMatrix.m32 = -((2 * NEAR_PLANE * FAR_PLANE) / frustumLength);
 		projectionMatrix.m33 = 0;
 	}
 

@@ -21,7 +21,7 @@ public abstract class ShaderProgram {
 	private int programID;
 	private int vertexShaderID;
 	private int fragmentShaderID;
-	
+
 	private static FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
 
 	public ShaderProgram(String vertexFile, String fragmentFile) {
@@ -39,24 +39,24 @@ public abstract class ShaderProgram {
 		GL20.glValidateProgram(programID);
 		getAllUniformLocations();
 	}
-	
+
 	protected abstract void getAllUniformLocations();
-	
+
 	// Gets location of uniform variable in shader code.
 	protected int getUniformLocation(String uniformName) {
-			return GL20.glGetUniformLocation(programID, uniformName);
+		return GL20.glGetUniformLocation(programID, uniformName);
 	}
 
 	// Loads floats to uniform location.
 	protected void loadFloat(int location, float value) {
 		GL20.glUniform1f(location, value);
 	}
-	
+
 	// Loads vector to uniform location.
 	protected void loadVector(int location, Vector3f vector) {
 		GL20.glUniform3f(location, vector.x, vector.y, vector.z);
 	}
-	
+
 	// Loads boolean to uniform location.
 	protected void loadBoolean(int location, boolean value) {
 		float toLoad = 0;
@@ -65,7 +65,7 @@ public abstract class ShaderProgram {
 		}
 		GL20.glUniform1f(location, toLoad);
 	}
-	
+
 	// Loads matrix to uniform location.
 	protected void loadMatrix(int location, Matrix4f matrix) {
 		matrix.store(matrixBuffer);

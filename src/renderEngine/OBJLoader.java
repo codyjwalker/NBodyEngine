@@ -75,11 +75,11 @@ public class OBJLoader {
 				String[] vertex1 = currLine[1].split("/");
 				String[] vertex2 = currLine[2].split("/");
 				String[] vertex3 = currLine[3].split("/");
-				
+
 				processVertex(vertex1, indices, textures, normals, textureArray, normalsArray);
 				processVertex(vertex2, indices, textures, normals, textureArray, normalsArray);
 				processVertex(vertex3, indices, textures, normals, textureArray, normalsArray);
-				
+
 				line = reader.readLine();
 			}
 			reader.close();
@@ -87,23 +87,22 @@ public class OBJLoader {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		verticesArray = new float[vertices.size() * 3];
 		indicesArray = new int[indices.size()];
 		int vertexPointer = 0;
-		
-		for (Vector3f vertex:vertices) {
+
+		for (Vector3f vertex : vertices) {
 			verticesArray[vertexPointer++] = vertex.x;
 			verticesArray[vertexPointer++] = vertex.y;
 			verticesArray[vertexPointer++] = vertex.z;
 		}
-		
+
 		for (int i = 0; i < indices.size(); i++) {
 			indicesArray[i] = indices.get(i);
 		}
-		
+
 		return loader.loadToVAO(verticesArray, textureArray, indicesArray);
-		
 
 	}
 

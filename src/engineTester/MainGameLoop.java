@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector3f;
 
 import entities.Camera;
@@ -27,15 +26,16 @@ import textures.ModelTexture;
  * 			game loop is contained.
  */
 public class MainGameLoop {
-	
+
 	private static int numBodies;
-	private static int bodyRadius;
+	private static int bodyRadius;	// Figure out how to use this with scale below!
 	private static int timesteps;
-	
+
 	static FileReader input = null;
 	static Scanner scan = null;
-
 	
+	private static Boolean pdb = true;
+
 	public static void main(String[] args) {
 
 		fileInit();
@@ -49,19 +49,20 @@ public class MainGameLoop {
 		Renderer renderer = new Renderer(shader);
 
 		// Load up RawModel & ModelTexture.
-		RawModel model = OBJLoader.loadObjModel("Ball", loader);
-		ModelTexture texture = new ModelTexture(loader.loadTexture("sassy"));
+		RawModel model = OBJLoader.loadObjModel("Earth", loader);
+		ModelTexture texture = new ModelTexture(loader.loadTexture("Albedo"));
 		// Make TexturedModel out of model & texture.
 		TexturedModel texturedModel = new TexturedModel(model, texture);
-		
-		System.out.println("numBodies = " + numBodies);
-		// Make Entity List.
+
+		// Make Entity List, with each entity using the TexturedModel.
 		List<Entity> entities = new ArrayList<Entity>();
 		for (int i = 0; i < numBodies; i++) {
 			float xpos = scan.nextFloat();
 			float ypos = scan.nextFloat();
 			float zpos = scan.nextFloat();
-			System.out.println(xpos + "  " + ypos + "  " + zpos);
+			if (pdb) {System.out.println(xpos + "  " + ypos + "  " + zpos);}
+
+			// TODO:	TIE IN BODY RADIUS WITH THE SCALE VARIABLE!!! (accurately)
 			entities.add(new Entity(texturedModel, new Vector3f(xpos, ypos, zpos), 0, 0, 0, 0.2f));
 		}
 
@@ -69,59 +70,59 @@ public class MainGameLoop {
 //		Entity entity = new Entity(texturedModel, new Vector3f(0, -0.2f, -10), 0, 0, 0, 1);
 		// Create camera.
 		Camera camera = new Camera();
-		
 
 		// The actual game loop. Exit when user clicks 'x' button.
-		while (!Display.isCloseRequested()) {
-			
-			for (int i = 0; i < (timesteps - 1); i++) {
-				
-				
+//		while (!Display.isCloseRequested()) {
 
-				// Move the camera to where user requested it to be moved.
-				camera.move();
+		// JK you thought I was being serious?!?!?!?!?
+		// Why in the world would the main game loop be commented out????
+		// THis is the loop, executes until all timesteps rendered.
+		// Starts at timestep 1 since we already loaded up 0th building entity list.
+		for (int i = 1; i < timesteps; i++) {
 
-				// Prepare the Renderer each frame.
-				renderer.prepare();
+			// Move the camera to where user requested it to be moved.
+			camera.move();
 
-				// Start the shader program before rendering.
-				shader.start();
-				
-				// Load camera into shader.
-				shader.loadViewMatrix(camera);
-				
-				
-								
-				
-				for (Entity entity:entities) {
-						
-//					entity.increaseRotation(0, 0.3f, 0);
-					
-					Vector3f position = new Vector3f(scan.nextFloat(), scan.nextFloat(), scan.nextFloat());
-					
-					System.out.println(position.x + "  " + position.y + "  " + position.z);
-					entity.setPosition(position);
+			// Prepare the Renderer each frame.
+			renderer.prepare();
 
-					// Render the model each frame.
-					renderer.render(entity, shader);
-				}
-	
-				// Stop shader after render finished.
-				shader.stop();
+			// Start the shader program before rendering.
+			shader.start();
 
-			
-				
-				
-				// Update the display each frame.
-				DisplayManager.updateDisplay();
+			// Load camera into shader.
+			shader.loadViewMatrix(camera);
 
+			for (Entity entity : entities) {
+
+				// Rotate the entities just for shits n giggles.
+				entity.increaseRotation(0, 0.5f, 0);
+
+				// Pull positional coordinates from input file.
+				Vector3f position = new Vector3f(scan.nextFloat(), scan.nextFloat(), scan.nextFloat());
+
+				if (pdb) {System.out.println(position.x + "  " + position.y + "  " + position.z);}
+
+				// Set the position of the current entity.
+				entity.setPosition(position);
+
+				// Render the model each frame.
+				renderer.render(entity, shader);
 			}
+
+			// Stop shader after render finished.
+			shader.stop();
+
+			// Update the display each frame.
+			DisplayManager.updateDisplay();
+
 		}
-		
+//		} // END while()
+
+		// CLEANUP, CLEANUP, EVERYBODY CLEAN UP!
 		try {
 			input.close();
+			scan.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -136,16 +137,15 @@ public class MainGameLoop {
 		try {
 			input = new FileReader("gui_input.txt");
 			scan = new Scanner(input);
-			
+
 			// Read in # of bodies, radius of bodies, & how many timesteps.
 			numBodies = scan.nextInt();
 			bodyRadius = scan.nextInt();
 			timesteps = scan.nextInt();
-
+			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
-	
 
 }

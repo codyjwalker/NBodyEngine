@@ -21,9 +21,7 @@ public class DisplayManager {
 	public static void createDisplay() {
 
 		// Set attributes required for creating the display.
-		ContextAttribs attribs = new ContextAttribs(3, 2)
-				.withForwardCompatible(true)
-				.withProfileCore(true);
+		ContextAttribs attribs = new ContextAttribs(3, 2).withForwardCompatible(true).withProfileCore(true);
 
 		try {
 			// Sets size of the display.

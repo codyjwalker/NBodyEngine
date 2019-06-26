@@ -7,10 +7,10 @@ import textures.ModelTexture;
  * Purpose:	Represents a textured model.  Contains both texture data and model data.
  */
 public class TexturedModel {
-	
+
 	private RawModel rawModel;
 	private ModelTexture texture;
-	
+
 	public TexturedModel(RawModel model, ModelTexture texture) {
 		this.rawModel = model;
 		this.texture = texture;
