@@ -11,10 +11,12 @@ import org.lwjgl.util.vector.Vector3f;
 
 import entities.Camera;
 import entities.Entity;
+import entities.Light;
 import models.RawModel;
 import models.TexturedModel;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
+import renderEngine.MasterRenderer;
 import renderEngine.OBJLoader;
 import renderEngine.Renderer;
 import shaders.StaticShader;
@@ -27,71 +29,38 @@ import textures.ModelTexture;
  */
 public class MainGameLoop {
 
+	private static Loader loader;
+	private static RawModel rawModel;
+	private static ModelTexture texture, modelTexture;
+	private static TexturedModel texturedModel;
+	private static Light light;
+	private static Camera camera;
+	private static MasterRenderer renderer;
+	private static List<Entity> entities;
+
 	private static int numBodies;
 	private static int bodyRadius;	// Figure out how to use this with scale below!
 	private static int timesteps;
 
-	static FileReader input = null;
-	static Scanner scan = null;
+	private static FileReader input = null;
+	private static Scanner scan = null;
 	
+
 	private static Boolean pdb = true;
 
 	public static void main(String[] args) {
 
-		fileInit();
-
-		// Open up the display.
-		DisplayManager.createDisplay();
-
-		// Create Loader, Renderer, & Shader so that we can use them.
-		Loader loader = new Loader();
-		StaticShader shader = new StaticShader();
-		Renderer renderer = new Renderer(shader);
-
-		// Load up RawModel & ModelTexture.
-		RawModel model = OBJLoader.loadObjModel("Earth", loader);
-		ModelTexture texture = new ModelTexture(loader.loadTexture("Albedo"));
-		// Make TexturedModel out of model & texture.
-		TexturedModel texturedModel = new TexturedModel(model, texture);
-
-		// Make Entity List, with each entity using the TexturedModel.
-		List<Entity> entities = new ArrayList<Entity>();
-		for (int i = 0; i < numBodies; i++) {
-			float xpos = scan.nextFloat();
-			float ypos = scan.nextFloat();
-			float zpos = scan.nextFloat();
-			if (pdb) {System.out.println(xpos + "  " + ypos + "  " + zpos);}
-
-			// TODO:	TIE IN BODY RADIUS WITH THE SCALE VARIABLE!!! (accurately)
-			entities.add(new Entity(texturedModel, new Vector3f(xpos, ypos, zpos), 0, 0, 0, 0.2f));
-		}
-
-		// Make Entity with TexturedModel.
-//		Entity entity = new Entity(texturedModel, new Vector3f(0, -0.2f, -10), 0, 0, 0, 1);
-		// Create camera.
-		Camera camera = new Camera();
-
-		// The actual game loop. Exit when user clicks 'x' button.
+		init();
 //		while (!Display.isCloseRequested()) {
 
-		// JK you thought I was being serious?!?!?!?!?
-		// Why in the world would the main game loop be commented out????
-		// THis is the loop, executes until all timesteps rendered.
+		// The Game Loop!
 		// Starts at timestep 1 since we already loaded up 0th building entity list.
 		for (int i = 1; i < timesteps; i++) {
 
 			// Move the camera to where user requested it to be moved.
 			camera.move();
 
-			// Prepare the Renderer each frame.
-			renderer.prepare();
-
-			// Start the shader program before rendering.
-			shader.start();
-
-			// Load camera into shader.
-			shader.loadViewMatrix(camera);
-
+			// For each entity, for each frame, process the entity.
 			for (Entity entity : entities) {
 
 				// Rotate the entities just for shits n giggles.
@@ -105,35 +74,22 @@ public class MainGameLoop {
 				// Set the position of the current entity.
 				entity.setPosition(position);
 
-				// Render the model each frame.
-				renderer.render(entity, shader);
+				// Process the current entity.
+				renderer.processEntity(entity);
 			}
-
-			// Stop shader after render finished.
-			shader.stop();
+			// Render each frame.
+			renderer.render(light, camera);
 
 			// Update the display each frame.
 			DisplayManager.updateDisplay();
 
 		}
 //		} // END while()
-
-		// CLEANUP, CLEANUP, EVERYBODY CLEAN UP!
-		try {
-			input.close();
-			scan.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		// Cleanup shader & loader upon closing.
-		shader.cleanUp();
-		loader.cleanUp();
-		// Close display once loop is exited.
-		DisplayManager.closeDisplay();
+		terminate();
 	}
 
-	private static void fileInit() {
+	private static void init() {
+		// Open up file and scanner.
 		try {
 			input = new FileReader("gui_input.txt");
 			scan = new Scanner(input);
@@ -146,6 +102,62 @@ public class MainGameLoop {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+		
+		// Open up the display.
+		DisplayManager.createDisplay();
+
+		// Create Loader.
+		loader = new Loader();
+
+		// Load up RawModel & ModelTexture, make texturedModel, & extract its texture.
+		rawModel = OBJLoader.loadObjModel("Ball", loader);
+		texture = new ModelTexture(loader.loadTexture("sassy"));
+		texturedModel = new TexturedModel(rawModel, texture);
+		modelTexture = texturedModel.getTexture();
+
+		// Set damper and reflectivity values.
+		modelTexture.setShineDamper(10);
+		modelTexture.setReflectivity(1);
+
+	
+		// Make Entity List, with each entity using the TexturedModel.
+		entities = new ArrayList<Entity>();
+		for (int i = 0; i < numBodies; i++) {
+			float xpos = scan.nextFloat();
+			float ypos = scan.nextFloat();
+			float zpos = scan.nextFloat();
+			if (pdb) {System.out.println(xpos + "  " + ypos + "  " + zpos);}
+
+			// TODO:	TIE IN BODY RADIUS WITH THE SCALE VARIABLE!!! (accurately)
+			entities.add(new Entity(texturedModel, new Vector3f(xpos, ypos, zpos), 0, 0, 0, 0.2f));
+		}
+
+
+		// Make lightsource.
+		light = new Light(new Vector3f(0, 0, 0), new Vector3f(1, 1, 1));
+
+		// Create camera.
+		camera = new Camera();
+
+		// Create the MasterRenderer
+		renderer = new MasterRenderer();
+	}
+	
+	private static void terminate() {
+		// CLEANUP, CLEANUP, EVERYBODY CLEAN UP!
+		try {
+			input.close();
+			scan.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		// Cleanup loader & renderer upon closing.
+		renderer.cleanUp();
+		loader.cleanUp();
+		// Close display once loop is exited.
+		DisplayManager.closeDisplay();
+	
 	}
 
 }

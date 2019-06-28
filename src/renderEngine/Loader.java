@@ -32,12 +32,15 @@ public class Loader {
 
 	// Takes in positions of the model's vertices, loads this data into
 	// a VAO, and then returns information about the VAO as a RawModel object.
-	public RawModel loadToVAO(float[] positions, float[] textureCoordinates, int[] indices) {
+	public RawModel loadToVAO(float[] positions, float[] textureCoordinates, float[] normals, int[] indices) {
 		int vaoID = createVAO();
 		bindIndicesBuffer(indices);
 		// Store positional data into the first (0) attribute list of the VAO.
 		storeDataInAttributeList(0, 3, positions);
+		// Store texture data into the second (1) attribute list of VAO.
 		storeDataInAttributeList(1, 2, textureCoordinates);
+		// Store normals data into third (2) attribute list of VAO.
+		storeDataInAttributeList(2, 3, normals);
 		// Unbind VAO when finished with it.
 		unbindVAO();
 		// Return the data we created about the VAO.
@@ -48,7 +51,7 @@ public class Loader {
 	public int loadTexture(String fileName) {
 		Texture texture = null;
 		try {
-			texture = TextureLoader.getTexture("PNG", new FileInputStream("res/" + fileName + ".jpg"));
+			texture = TextureLoader.getTexture("PNG", new FileInputStream("res/" + fileName + ".png"));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
